@@ -10,6 +10,17 @@ SWIFT_PROJECT_DIR = "."
 # These are normal Python functions. Nothing magic happens here yet —
 # Claude can't run these directly, it can only ASK us to run them.
 
+def list_files(path: str = ".") -> str:
+    """Lists files and folders inside a given directory, relative to the project root."""
+    import os
+    entries = []
+    for root, dirs, files in os.walk(path):
+        # skip hidden/build folders so the output isn't noisy
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d != ".build"]
+        for f in files:
+            entries.append(os.path.join(root, f))
+    return "\n".join(entries) if entries else "No files found."
+
 def read_file(path: str) -> str:
     """Reads a file and returns its text content."""
     with open(path, "r") as f:
@@ -50,6 +61,7 @@ def run_tests() -> str:
 # A lookup table so we can call the right Python function by name once
 # Claude tells us which tool it wants.
 TOOL_FUNCTIONS = {
+    "list_files": list_files,
     "read_file": read_file,
     "write_file": write_file,
     "run_build": run_build,
@@ -91,6 +103,15 @@ TOOLS = [
         "name": "run_tests",
         "description": "Run `swift test` and return the test results.",
         "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+    "name": "list_files",
+    "description": "List all files in a directory (recursively), relative to the project root. Use this first to discover what files exist before reading them.",
+    "input_schema": {
+        "type": "object",
+        "properties": {"path": {"type": "string", "description": "Directory to list, defaults to project root."}},
+        "required": [],
+        },
     },
 ]
 
