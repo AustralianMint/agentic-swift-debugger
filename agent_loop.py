@@ -13,10 +13,10 @@ SWIFT_PROJECT_DIR = "."
 def list_files(path: str = ".") -> str:
     """Lists files and folders inside a given directory, relative to the project root."""
     import os
+    IGNORE_DIRS = {"venv", ".git", ".build", "__pycache__", ".swiftpm", ".vscode"}
     entries = []
     for root, dirs, files in os.walk(path):
-        # skip hidden/build folders so the output isn't noisy
-        dirs[:] = [d for d in dirs if not d.startswith(".") and d != ".build"]
+        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
         for f in files:
             entries.append(os.path.join(root, f))
     return "\n".join(entries) if entries else "No files found."
